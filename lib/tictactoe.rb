@@ -20,8 +20,8 @@ class GameBoard
 
   def get_move
     loop do
-      move = gets.chomp
-      return move if @board.split('').grep(/[\d]/).include?(move)
+      player_move = gets.chomp
+      return player_move if @board.split('').grep(/[\d]/).include?(player_move)
 
       puts 'Invalid move'
     end

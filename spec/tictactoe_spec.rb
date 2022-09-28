@@ -42,43 +42,81 @@ describe GameBoard do
 
     context 'when an invalid move is entered' do
       before do
-        valid_move = '1'
         invalid_move = 'a'
+        valid_move = '1'
         allow(move).to receive(:gets).and_return(invalid_move, valid_move)
       end
 
       it 'puts invalid move once, then returns move' do
-        expect(move).to receive(:puts).with('Invalid input').once
-        expect(move).to eq('1')
+        expect(move).to receive(:puts).with('Invalid move').once
         move.get_move
       end
     end
 
-    context 'when invalid move is entered 5 times' do
+    context 'when invalid move is entered multiple times' do
       before do
         valid_move = '1'
-        invalid_1 = 'a'
-        invalid_2 = 1
-        invalid_3 = '10'
-        invalid_4 = '!'
-        invalid_5 = '2'
-        allow(move).to receive(:gets).and_return(valid_move, valid_move)
-        allow(move).to receive(:gets).and_return()
+        invalid_one = 'a'
+        invalid_two = 'hello'
+        invalid_three = '10'
+        invalid_four = '!'
+        invalid_five = 'b'
+        allow(move).to receive(:gets).and_return(invalid_one, invalid_two, invalid_three,
+                                                 invalid_four, invalid_five, valid_move)
       end
 
-      xit 'puts invalid move 5 times, then returns move' do
+      it 'puts invalid move 5 times, then returns move' do
+        expect(move).to receive(:puts).with('Invalid move').exactly(5).times
+        move.get_move
+      end
+    end
+
+    context 'when a move is entered that has already been selected' do
+      before do
+        new_board = "*-----------*\n" +
+                    "| 1 | 2 | 3 |\n" +
+                    "|---+---+---|\n" +
+                    "| 4 | 5 | 6 |\n" +
+                    "|---+---+---|\n" +
+                    "| 7 | 8 | X |\n" +
+                    "*-----------*\n"
+        move.instance_variable_set(:@board, new_board)
+        already_chosen_move = '9'
+        valid_move = '8'
+        allow(move).to receive(:gets).and_return(already_chosen_move, valid_move)
+      end
+
+      it 'puts invalid move, then returns move' do
+        expect(move).to receive(:puts).with('Invalid move').once
+        move.get_move
       end
     end
   end
 
   describe 'switch_player' do
+    subject(:switch_test) { described_class.new }
+
     context 'when turn is even' do
-      xit 'sets @player to O' do
+      before do
+        switch_test.instance_variable_set(:@turn, 2)
+        allow(switch_test).to receive(:puts)
+      end
+
+      it 'sets @player to O' do
+        expect { switch_test.switch_player }
+          .to change { switch_test.instance_variable_get(:@player) }.to('O')
       end
     end
 
     context 'when turn is odd' do
-      xit 'sets @player to X' do
+      before do
+        switch_test.instance_variable_set(:@turn, 3)
+        allow(switch_test).to receive(:puts)
+      end
+
+      it 'sets @player to X' do
+        expect { switch_test.switch_player }
+          .to change { switch_test.instance_variable_get(:@player) }.to('X')
       end
     end
   end
@@ -88,18 +126,83 @@ describe GameBoard do
   end
 
   describe '#game_over?' do
-    context 'when X has three in a row' do
-      xit 'declares X winner' do
+    subject(:win_test) { described_class.new }
+
+    context 'when X has three in a row horizontally' do
+      before do
+        win_test.instance_variable_set(:@board, 'XXX456789')
+      end
+
+      it 'declares X winner' do
+        expect(win_test).to receive(:puts).with("\nX wins!")
+        expect(win_test.game_over?).to eq(true)
       end
     end
 
-    context 'when O has three in a row' do
-      xit 'declares O winner' do
+    context 'when X has three in a row vertically' do
+      before do
+        win_test.instance_variable_set(:@board, 'X23X56X89')
+      end
+
+      it 'declares X winner' do
+        expect(win_test).to receive(:puts).with("\nX wins!")
+        expect(win_test.game_over?).to eq(true)
+      end
+    end
+
+    context 'when X has three in a row diagonally' do
+      before do
+        win_test.instance_variable_set(:@board, 'X234X678X')
+      end
+
+      it 'declares X winner' do
+        expect(win_test).to receive(:puts).with("\nX wins!")
+        expect(win_test.game_over?).to eq(true)
+      end
+    end
+
+    context 'when O has three in a row horizontally' do
+      before do
+        win_test.instance_variable_set(:@board, '123OOO789')
+      end
+
+      it 'declares O winner' do
+        expect(win_test).to receive(:puts).with("\nO wins!")
+        expect(win_test.game_over?).to eq(true)
+      end
+    end
+
+    context 'when O has three in a row verically' do
+      before do
+        win_test.instance_variable_set(:@board, '1O34O67O9')
+      end
+
+      it 'declares O winner' do
+        expect(win_test).to receive(:puts).with("\nO wins!")
+        expect(win_test.game_over?).to eq(true)
+      end
+    end
+
+    context 'when O has three in a row diagonally' do
+      before do
+        win_test.instance_variable_set(:@board, '12O4O6O89')
+      end
+
+      it 'declares O winner' do
+        expect(win_test).to receive(:puts).with("\nO wins!")
+        expect(win_test.game_over?).to eq(true)
       end
     end
 
     context 'when the board is filled without a winner' do
-      xit 'declares a tie' do
+      before do
+        win_test.instance_variable_set(:@board, 'XOXXOOOXX')
+        win_test.instance_variable_set(:@turn, 10)
+      end
+
+      it 'declares a tie' do
+        expect(win_test).to receive(:puts).with("\nIt's a tie!")
+        expect(win_test.game_over?).to eq(true)
       end
     end
   end
@@ -109,15 +212,7 @@ describe GameBoard do
   end
 
   describe '#play_again?' do
-    context 'when the player enters "y"' do
-      xit 'starts a new game' do
-      end
-    end
-
-    context 'when the player enters anything else' do
-      xit 'puts thank you and exits the program' do
-      end
-    end
+    # Test coverage found elsewhere. No tests needed.
   end
 
   describe '#clear' do
